@@ -1,13 +1,14 @@
 // imports
 const cheerio = require('cheerio')
 const puppeteer = require('puppeteer')
+const dms2ddm = require('./converter')
 
 exports.getScrapedData = async () => {
   const browser = await puppeteer.launch()
   const page = await browser.newPage()
   await page.setRequestInterception(true)
   // skip loading of stylesheets, fonts and images
-  page.on('request', req => {
+  page.on('request', (req) => {
     if (
       req.resourceType() == 'stylesheet' ||
       req.resourceType() == 'font' ||
@@ -30,17 +31,13 @@ exports.getScrapedData = async () => {
     const place = $(tds[0]).text()
     const direction = $(tds[1]).text()
     const bearing = $(tds[2]).text()
-    const distances = $(tds[3])
-      .text()
-      .split('-')
+    const distances = $(tds[3]).text().split('-')
     const distance = { start: distances[0], end: distances[1] }
-    const depths = $(tds[4])
-      .text()
-      .split('-')
+    const depths = $(tds[4]).text().split('-')
     const depth = { start: depths[0], end: depths[1] }
-    const latitude = $(tds[5]).text()
-    const longitude = $(tds[6]).text()
-    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
+    const latitude = dms2ddm($(tds[5]).text())
+    const longitude = dms2ddm($(tds[6]).text())
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude}, ${longitude}`
     tableRow = {
       place,
       direction,
@@ -49,7 +46,7 @@ exports.getScrapedData = async () => {
       depth,
       latitude,
       longitude,
-      googleMapsUrl
+      googleMapsUrl,
     }
     scrappedData.push(tableRow)
   })

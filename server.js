@@ -30,7 +30,7 @@ app.use((err, req, res, next) => {
   }
   res.json({
     status: res.statusCode,
-    message: err.message
+    message: err.message,
   })
 })
 
